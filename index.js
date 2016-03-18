@@ -28,7 +28,22 @@ exports.plain = String;
  * @param Model
  */
 exports.initSchema = function (field, schema, Model) {
-  schema.path(field.path, field.number ? Number : String);
+  let options = {
+    type: field.number ? Number : field.boolean ? Boolean : String
+  };
+  [
+    'get',
+    'set',
+    'default',
+    'index',
+    'select'
+  ].forEach(function (key) {
+    if (field[key] !== undefined) {
+      options[key] = field[key];
+    }
+  });
+
+  schema.path(field.path, options);
 };
 
 /**
