@@ -8,7 +8,59 @@
 
 const alaska = require('alaska');
 
-exports.views = {
+class SelectField extends alaska.Field {
+  initSchema() {
+    let schema = this._schema;
+    this.dataType = this.number ? Number : this.boolean ? Boolean : String;
+    let options = {
+      type: this.dataType
+    };
+    [
+      'get',
+      'set',
+      'default',
+      'index',
+      'select'
+    ].forEach(key => {
+      if (this[key] !== undefined) {
+        options[key] = this[key];
+      }
+    });
+
+    schema.path(this.path, options);
+  }
+
+  createFilter(filter) {
+    let value = filter;
+    if (typeof filter === 'object' && filter.value) {
+      value = filter.value;
+    }
+
+    if (this.dataType === Number) {
+      value = parseInt(value);
+      if (isNaN(value)) {
+        return;
+      }
+      return value;
+    }
+
+    if (this.dataType === String) {
+      if (typeof value !== 'string' && value.toString) {
+        value = value.toString();
+      }
+      if (typeof value === 'string') {
+        return value;
+      }
+    }
+
+    if (this.dataType === Boolean) {
+      return (!value || value === 'false') ? { $ne: true } : true;
+    }
+  }
+
+}
+
+SelectField.views = {
   cell: {
     name: 'SelectFieldCell',
     field: __dirname + '/lib/cell.js'
@@ -19,40 +71,8 @@ exports.views = {
   }
 };
 
-exports.plain = String;
+SelectField.plain = String;
 
-/**
- * 初始化Schema
- * @param field   alaksa.Model中的字段配置
- * @param schema
- * @param Model
- */
-exports.initSchema = function (field, schema, Model) {
-  let options = {
-    type: field.number ? Number : field.boolean ? Boolean : String
-  };
-  [
-    'get',
-    'set',
-    'default',
-    'index',
-    'select'
-  ].forEach(function (key) {
-    if (field[key] !== undefined) {
-      options[key] = field[key];
-    }
-  });
+SelectField.viewOptions = ['options'];
 
-  schema.path(field.path, options);
-};
-
-/**
- * alaska-admin-view 前端控件初始化参数
- * @param field
- * @param Model
- */
-exports.viewOptions = function (field, Model) {
-  let options = alaska.Field.viewOptions.apply(this, arguments);
-  options.options = field.options;
-  return options;
-};
+module.exports = SelectField;

@@ -74,7 +74,7 @@ export default class SelectFieldView extends React.Component {
   }
 
   render() {
-    let { field, value, disabled } = this.props;
+    let { field, value, disabled, errorText } = this.props;
     let { muiTheme } = this.state;
     let noteElement = field.note ?
       <div style={field.fullWidth?muiTheme.fieldNote:muiTheme.fieldNoteInline}>{field.note}</div> : null;
@@ -85,6 +85,7 @@ export default class SelectFieldView extends React.Component {
           fullWidth={field.fullWidth}
           value={value}
           disabled={disabled}
+          errorText={errorText}
           onChange={this.handleChange}>
           {
             _.map(field.options, option=><MenuItem key={option.value} value={option.value}
