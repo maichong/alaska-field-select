@@ -35,36 +35,35 @@ export default class Select extends React.Component {
   static propTypes = {
     multi: React.PropTypes.bool,
     onChange: React.PropTypes.func,
+    loadOptions: React.PropTypes.func,
     value: React.PropTypes.any,
+    options: React.PropTypes.array
   };
 
   constructor(props) {
     super(props);
     this.state = {
+      options: props.options,
       value: props.value
     };
   }
 
-  componentWillMount() {
-  }
-
   componentDidMount() {
+    let props = this.props;
+    if (props.loadOptions && (!props.options || !props.options.length)) {
+      this.handleSearchChange('');
+    }
   }
 
   componentWillReceiveProps(props) {
+    if (props.options) {
+      this.setState({
+        options: props.options
+      });
+    }
   }
 
-  componentWillUnmount() {
-  }
-
-  handleValueChange = (v) => {
-    this.setState({
-      value: v
-    });
-    this.props.onChange && this.props.onChange(v);
-  };
-
-  handleValuesChange = (v) => {
+  handleChange = (v) => {
     this.setState({
       value: v
     });
@@ -95,30 +94,47 @@ export default class Select extends React.Component {
     );
   };
 
+  handleSearchChange = (search) => {
+    this.props.loadOptions(search, (error, res) => {
+      if (!error && res.options) {
+        this.setState({ options: res.options });
+      }
+    });
+  };
+
   render() {
     let {
       multi,
       onChange,
       allowCreate,
       renderValue,
+      loadOptions,
+      disabled,
       value,
+      options,
       ...others
       } = this.props;
 
     return multi ? (
       <MultiSelect
         createFromSearch={ allowCreate ? createFromSearchMulti : null}
-        renderValue={renderValue ? renderValue : this.renderValueWithRemove}
-        onValuesChange={this.handleValuesChange}
+        renderValue={renderValue || disabled ? renderValue : this.renderValueWithRemove}
+        onValuesChange={this.handleChange}
         values={this.state.value}
+        onSearchChange={loadOptions ? this.handleSearchChange : null}
+        options={this.state.options}
+        disabled={disabled}
         {...others}
       />
     ) : (
       <SimpleSelect
         createFromSearch={ allowCreate ? createFromSearchSimple : null}
         renderValue={renderValue}
-        onValueChange={this.handleValueChange}
+        onValueChange={this.handleChange}
         value={this.state.value}
+        onSearchChange={loadOptions ? this.handleSearchChange : null}
+        options={this.state.options}
+        disabled={disabled}
         {...others}
       />
     );
