@@ -6,7 +6,7 @@
 
 import React from 'react';
 
-import Select from 'react-select';
+import Select from './Select';
 import { shallowEqual } from 'alaska-admin-view';
 
 export default class SelectFieldView extends React.Component {
@@ -32,6 +32,7 @@ export default class SelectFieldView extends React.Component {
     let { field, value, disabled, errorText } = this.props;
     let noteElement = field.note ? <p classNamp="help-block">{field.note}</p> : null;
     let errorLabel = errorText ? <p className="help-block text-danger">{errorText}</p> : null;
+    console.log('field.options', field.options);
     return (
       <div className="form-group">
         <label className="control-label col-xs-2">{field.label}</label>
