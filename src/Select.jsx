@@ -44,11 +44,12 @@ export default class Select extends React.Component {
     super(props);
     this.state = {
       options: props.options,
-      value: props.value
+      optionsMap: {}
     };
+    this.state.value = this.processValue(props.value);
   }
 
-  componentDidMount() {
+  componentWillMount() {
     let props = this.props;
     if (props.loadOptions && (!props.options || !props.options.length)) {
       this.handleSearchChange('');
@@ -56,17 +57,63 @@ export default class Select extends React.Component {
   }
 
   componentWillReceiveProps(props) {
+    let state = {};
     if (props.options) {
-      this.setState({
-        options: props.options
-      });
+      state.options = props.options;
     }
+    if (props.value !== undefined) {
+      state.value = this.processValue(props.value)
+    }
+    this.setState(state);
   }
 
+  processValue = (value) => {
+    if (!value) {
+      return value;
+    }
+    let optionsMap = this.state.optionsMap;
+
+    function processOne(v) {
+      if (typeof v === 'object') {
+        if (v.label != v.value) {
+          return v;
+        } else {
+          if (optionsMap[v.value]) {
+            return optionsMap[v.value];
+          }
+          return v;
+        }
+      }
+      if (optionsMap[v]) {
+        return optionsMap[v];
+      }
+      return { label: v, value: v };
+    }
+
+    if (this.props.multi) {
+      if (!value || !value.length) {
+        return [];
+      }
+      return value.map(processOne);
+    }
+    return processOne(value);
+  };
+
   handleChange = (v) => {
-    this.setState({
-      value: v
-    });
+    let optionsMap = this.state.optionsMap;
+    if (v) {
+      if (v instanceof Array) {
+        v.forEach(vv => {
+          if (vv.label != vv.value) {
+            optionsMap[vv.value] = vv;
+          }
+        });
+      }
+      if (v.label != v.value) {
+        optionsMap[v.value] = v;
+      }
+    }
+    this.setState({ optionsMap, value: v });
     this.props.onChange && this.props.onChange(v);
   };
 
@@ -97,7 +144,21 @@ export default class Select extends React.Component {
   handleSearchChange = (search) => {
     this.props.loadOptions(search, (error, res) => {
       if (!error && res.options) {
-        this.setState({ options: res.options });
+        let optionsMap = this.state.optionsMap;
+        res.options.forEach(o => {
+          optionsMap[o.value] = o;
+        });
+        let value = this.state.value;
+        if (this.props.multi) {
+          value.forEach(v => {
+            if (v.label == v.value && optionsMap[v.value]) {
+              v.label = optionsMap[v.value].label;
+            }
+          });
+        } else if (value && value.label == value.value && optionsMap[value.value]) {
+          value.label = optionsMap[value.value].label;
+        }
+        this.setState({ options: res.options, value, optionsMap });
       }
     });
   };

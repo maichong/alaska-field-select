@@ -30,11 +30,15 @@ export default class SelectFieldView extends React.Component {
 
   render() {
     let { field, value, disabled, errorText } = this.props;
-    let noteElement = field.note ? <p classNamp="help-block">{field.note}</p> : null;
-    let errorLabel = errorText ? <p className="help-block text-danger">{errorText}</p> : null;
-    console.log('field.options', field.options);
+    let help = field.help;
+    let className = 'form-group';
+    if (errorText) {
+      className += ' has-error';
+      help = errorText;
+    }
+    let helpElement = help ? <p className="help-block">{help}</p> : null;
     return (
-      <div className="form-group">
+      <div className={className}>
         <label className="control-label col-xs-2">{field.label}</label>
         <div className="col-xs-10">
           <Select
@@ -43,8 +47,7 @@ export default class SelectFieldView extends React.Component {
             options={field.options}
             onChange={this.handleChange}
           />
-          {noteElement}
-          {errorLabel}
+          {helpElement}
         </div>
       </div>
     );
