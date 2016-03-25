@@ -144,12 +144,13 @@ export default class Select extends React.Component {
   handleSearchChange = (search) => {
     this.props.loadOptions(search, (error, res) => {
       if (!error && res.options) {
+        let options = res.options.slice();
         let optionsMap = this.state.optionsMap;
-        res.options.forEach(o => {
+        options.forEach(o => {
           optionsMap[o.value] = o;
         });
         let value = this.state.value;
-        if (this.props.multi) {
+        if (value && this.props.multi) {
           value.forEach(v => {
             if (v.label == v.value && optionsMap[v.value]) {
               v.label = optionsMap[v.value].label;
@@ -158,7 +159,7 @@ export default class Select extends React.Component {
         } else if (value && value.label == value.value && optionsMap[value.value]) {
           value.label = optionsMap[value.value].label;
         }
-        this.setState({ options: res.options, value, optionsMap });
+        this.setState({ options, value, optionsMap });
       }
     });
   };
