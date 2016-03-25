@@ -47,6 +47,7 @@ export default class Select extends React.Component {
       optionsMap: {}
     };
     this.state.value = this.processValue(props.value);
+    this._cache = {};
   }
 
   componentWillMount() {
@@ -65,6 +66,10 @@ export default class Select extends React.Component {
       state.value = this.processValue(props.value)
     }
     this.setState(state);
+  }
+
+  componentWillUnmount() {
+    this._cache = {};
   }
 
   processValue = (value) => {
@@ -142,9 +147,13 @@ export default class Select extends React.Component {
   };
 
   handleSearchChange = (search) => {
+    if (this._cache[search]) {
+      this.setState({ options: this._cache[search] });
+      return;
+    }
     this.props.loadOptions(search, (error, res) => {
       if (!error && res.options) {
-        let options = res.options.slice();
+        let options = this._cache[search] = res.options;
         let optionsMap = this.state.optionsMap;
         options.forEach(o => {
           optionsMap[o.value] = o;
