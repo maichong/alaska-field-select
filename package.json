@@ -1,6 +1,6 @@
 {
   "name": "alaska-field-select",
-  "version": "0.4.5",
+  "version": "0.4.6",
   "description": "Alaska select field",
   "main": "index.js",
   "scripts": {
@@ -34,6 +34,8 @@
     "rimraf": "^2.5.2"
   },
   "dependencies": {
+    "react-addons-css-transition-group": "^0.14.7",
+    "react-addons-shallow-compare": "^0.14.7",
     "react-selectize": "^0.9.0"
   }
 }
