@@ -46,6 +46,9 @@ export default class Select extends React.Component {
       options: props.options,
       optionsMap: {}
     };
+    for (let o of props.options) {
+      this.state.optionsMap[o.value] = o;
+    }
     this.state.value = this.processValue(props.value);
     this._cache = {};
   }
@@ -63,7 +66,7 @@ export default class Select extends React.Component {
       state.options = props.options;
     }
     if (props.value !== undefined) {
-      state.value = this.processValue(props.value)
+      state.value = this.processValue(props.value);
     }
     this.setState(state);
   }
@@ -73,14 +76,11 @@ export default class Select extends React.Component {
   }
 
   processValue = (value) => {
-    if (!value) {
-      return value;
-    }
     let optionsMap = this.state.optionsMap;
 
     function processOne(v) {
-      if (typeof v === 'object') {
-        if (v.label != v.value) {
+      if (typeof v === 'object' && v !== null) {
+        if (v.label !== v.value) {
           return v;
         } else {
           if (optionsMap[v.value]) {
