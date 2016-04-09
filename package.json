@@ -1,6 +1,6 @@
 {
   "name": "alaska-field-select",
-  "version": "0.7.0",
+  "version": "0.7.2",
   "description": "Alaska select field",
   "main": "index.js",
   "scripts": {

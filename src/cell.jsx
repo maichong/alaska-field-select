@@ -9,7 +9,7 @@ import React from 'react';
 export default class SelectViewCell extends React.Component {
 
   static contextTypes = {
-    settings: React.PropTypes.object,
+    t: React.PropTypes.func,
   };
 
   shouldComponentUpdate(props) {
@@ -17,15 +17,17 @@ export default class SelectViewCell extends React.Component {
   }
 
   render() {
-    let { field, value } = this.props;
+    const t = this.context.t;
+    let { field, value, model } = this.props;
     for (let i in field.options) {
       if (field.options[i].value == value) {
         value = field.options[i].label || value;
-        return <div>{value}</div>;
+        break;
       }
     }
-    return (
-      <div>{value}</div>
-    );
+    if (field.translate !== false) {
+      value = t(value, model.service.id);
+    }
+    return <div>{value}</div>;
   }
 }
