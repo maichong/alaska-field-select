@@ -20,6 +20,10 @@ class SelectField extends alaska.Field {
       'set',
       'default',
       'index',
+      'unique',
+      'text',
+      'sparse',
+      'required',
       'select'
     ].forEach(key => {
       if (this[key] !== undefined) {
