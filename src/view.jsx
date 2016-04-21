@@ -8,7 +8,8 @@ import React from 'react';
 
 import Select from './Select';
 import { shallowEqual } from 'alaska-admin-view';
-import _ from 'lodash';
+import _find from 'lodash/find';
+import _every from 'lodash/every';
 
 function tr(opt, translate, t) {
   if (translate === false || !t) {
@@ -23,12 +24,13 @@ function tr(opt, translate, t) {
 export default class SelectFieldView extends React.Component {
 
   static propTypes = {
+    model: React.PropTypes.object,
     field: React.PropTypes.object,
     data: React.PropTypes.object,
-    onChange: React.PropTypes.func,
-    value: React.PropTypes.any,
-    disabled: React.PropTypes.bool,
     errorText: React.PropTypes.string,
+    disabled: React.PropTypes.bool,
+    value: React.PropTypes.any,
+    onChange: React.PropTypes.func,
   };
 
   static contextTypes = {
@@ -87,7 +89,7 @@ export default class SelectFieldView extends React.Component {
         if (data[opt.depends]) {
           result.push(this.t(opt));
         }
-      } else if (typeof opt.depends === 'object' && _.every(opt.depends, (value, k) => data[k] === value)) {
+      } else if (typeof opt.depends === 'object' && _every(opt.depends, (value, k) => data[k] === value)) {
         result.push(this.t(opt));
       }
     });
@@ -103,16 +105,39 @@ export default class SelectFieldView extends React.Component {
       help = errorText;
     }
     let helpElement = help ? <p className="help-block">{help}</p> : null;
+    let inputElement;
+    if (field.static) {
+      let option = _find(this.state.options, opt => opt.value === value);
+      inputElement = <p className="form-control-static">{option ? option.label : value}</p>;
+    } else {
+      inputElement = <Select
+        value={value}
+        disabled={disabled}
+        options={this.state.options}
+        onChange={this.handleChange}
+      />;
+    }
+
+    let label = field.nolabel ? '' : field.label;
+
+    if (field.fullWidth) {
+      let labelElement = label ? (
+        <label className="control-label">{label}</label>
+      ) : null;
+      return (
+        <div className={className}>
+          {labelElement}
+          {inputElement}
+          {helpElement}
+        </div>
+      );
+    }
+
     return (
       <div className={className}>
-        <label className="control-label col-xs-2">{field.label}</label>
-        <div className="col-xs-10">
-          <Select
-            value={value}
-            disabled={disabled}
-            options={this.state.options}
-            onChange={this.handleChange}
-          />
+        <label className="col-sm-2 control-label">{label}</label>
+        <div className="col-sm-10">
+          {inputElement}
           {helpElement}
         </div>
       </div>
