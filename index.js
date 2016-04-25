@@ -36,16 +36,18 @@ class SelectField extends alaska.Field {
 
   createFilter(filter) {
     let value = filter;
+    let inverse = false;
     if (typeof filter === 'object' && filter.value) {
       value = filter.value;
+      if (filter.inverse === true || filter.inverse === 'true') {
+        inverse = true;
+      }
     }
 
     if (this.dataType === Number) {
       value = parseInt(value);
-      if (isNaN(value)) {
-        return;
-      }
-      return value;
+      if (isNaN(value)) return;
+      return inverse ? { $ne: value } : value;
     }
 
     if (this.dataType === String) {
@@ -53,12 +55,13 @@ class SelectField extends alaska.Field {
         value = value.toString();
       }
       if (typeof value === 'string') {
-        return value;
+        return inverse ? { $ne: value } : value;
       }
     }
 
     if (this.dataType === Boolean) {
-      return (!value || value === 'false') ? { $ne: true } : true;
+      value = value && (value === true || value === 'true');
+      return inverse ? { $ne: value } : value;
     }
   }
 
@@ -72,6 +75,10 @@ SelectField.views = {
   view: {
     name: 'SelectFieldView',
     field: __dirname + '/lib/view.js'
+  },
+  filter: {
+    name: 'SelectFieldFilter',
+    field: __dirname + '/lib/filter.js'
   }
 };
 
