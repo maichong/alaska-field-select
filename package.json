@@ -1,7 +1,11 @@
 {
   "name": "alaska-field-select",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "Alaska select field",
+  "keywords": [
+    "alaska",
+    "alaska-field"
+  ],
   "main": "index.js",
   "scripts": {
     "build": "babel ./src --out-dir ./lib",
@@ -27,8 +31,8 @@
     "alaska": "*"
   },
   "dependencies": {
-    "react-addons-css-transition-group": "^0.14.7",
-    "react-addons-shallow-compare": "^0.14.7",
-    "react-selectize": "^0.9.0"
+    "react-addons-css-transition-group": "^15.0.2",
+    "react-addons-shallow-compare": "^15.0.2",
+    "react-selectize": "^2.0.1"
   }
 }
