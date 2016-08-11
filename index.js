@@ -84,6 +84,6 @@ SelectField.views = {
 
 SelectField.plain = String;
 
-SelectField.viewOptions = ['options', 'translate'];
+SelectField.viewOptions = ['options', 'translate', 'check'];
 
 module.exports = SelectField;

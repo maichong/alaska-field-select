@@ -7,19 +7,10 @@
 import React from 'react';
 
 import Select from './Select';
+import Checkbox from './Checkbox';
 import { shallowEqual } from 'alaska-admin-view';
 import _find from 'lodash/find';
 import _every from 'lodash/every';
-
-function tr(opt, translate, t) {
-  if (translate === false || !t) {
-    return opt;
-  }
-  return {
-    label: t()
-  }
-}
-
 
 export default class SelectFieldView extends React.Component {
 
@@ -98,6 +89,7 @@ export default class SelectFieldView extends React.Component {
 
   render() {
     let { field, value, disabled, errorText } = this.props;
+    let View = field.checkbox ? Checkbox : Select;
     let help = field.help;
     let className = 'form-group';
     if (errorText) {
@@ -110,7 +102,7 @@ export default class SelectFieldView extends React.Component {
       let option = _find(this.state.options, opt => opt.value === value);
       inputElement = <p className="form-control-static">{option ? option.label : value}</p>;
     } else {
-      inputElement = <Select
+      inputElement = <View
         value={value}
         disabled={disabled}
         options={this.state.options}
