@@ -5,20 +5,29 @@
  */
 
 import React from 'react';
-
+import _map from 'lodash/map';
 import Select from './Select';
+import Checkbox from './Checkbox';
+import Switch from './Switch';
+
+function getOptionValue(opt) {
+  if (opt && typeof opt === 'object') return opt.value;
+  return opt;
+}
+
+const { object, any, func, string } = React.PropTypes;
 
 export default class SelectFieldFilter extends React.Component {
 
   static propTypes = {
-    value: React.PropTypes.any,
-    field: React.PropTypes.object,
-    onChange: React.PropTypes.func,
-    onClose: React.PropTypes.func,
+    value: any,
+    field: object,
+    onChange: func,
+    onClose: func,
   };
 
   static contextTypes = {
-    t: React.PropTypes.func,
+    t: func,
   };
 
   constructor(props) {
@@ -30,7 +39,19 @@ export default class SelectFieldFilter extends React.Component {
     this.state = {
       value: value.value,
       inverse: value.inverse === true || value.inverse === 'true',
-      error: false
+      error: value.value === undefined
+    };
+  }
+
+  t(opt) {
+    const t = this.context.t;
+    if (this.props.field.translate === false || !t) {
+      return opt;
+    }
+    return {
+      label: t(opt.label),
+      value: opt.value,
+      style: opt.style
     };
   }
 
@@ -39,7 +60,7 @@ export default class SelectFieldFilter extends React.Component {
   };
 
   handleChange = option => {
-    this.setState({ value: option ? option.value : undefined }, () => this.handleBlur());
+    this.setState({ value: getOptionValue(value) }, () => this.handleBlur());
   };
 
   handleBlur = () => {
@@ -58,25 +79,31 @@ export default class SelectFieldFilter extends React.Component {
     const { field, onClose } = this.props;
     const { value, inverse, error } = this.state;
     const buttonClassName = 'btn btn-default';
-    const buttonClassNameActive = buttonClassName + ' active';
-    let className = 'row field-filter field-filter-number' + (error ? ' error' : '');
+    const buttonClassNameActive = buttonClassName + ' btn-success';
+    let className = 'row field-filter select-field-filter' + (error ? ' error' : '');
+    let View = Select;
+    if (field.checkbox) {
+      View = Checkbox;
+    } else if (field.switch) {
+      View = Switch;
+    }
     return (
       <div className={className}>
         <label className="col-xs-2 control-label text-right">{field.label}</label>
-        <form className="form-inline col-xs-10">
+        <div className="form-inline col-xs-10">
           <div className="form-group" style={{ minWidth: 230 }}>
-            <Select
-              options={field.options}
+            <View
+              options={_map(field.options, opt => this.t(opt))}
               value={value}
               onChange={this.handleChange}
             />
           </div>
-          <button
+          <a
             className={inverse ? buttonClassNameActive : buttonClassName}
             onClick={this.handleInverse}>{t('inverse')}
-          </button>
-        </form>
-        <button className="btn field-filter-close" onClick={onClose}><i className="fa fa-close"/></button>
+          </a>
+        </div>
+        <a className="btn field-filter-close" onClick={onClose}><i className="fa fa-close"/></a>
       </div>
     );
   }

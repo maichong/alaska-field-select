@@ -30,14 +30,16 @@ function createFromSearchMulti(options, values, search) {
   return { label: search, value: search };
 }
 
+const { any, array, bool, func } = React.PropTypes;
+
 export default class Select extends React.Component {
 
   static propTypes = {
-    multi: React.PropTypes.bool,
-    onChange: React.PropTypes.func,
-    loadOptions: React.PropTypes.func,
-    value: React.PropTypes.any,
-    options: React.PropTypes.array
+    multi: bool,
+    onChange: func,
+    loadOptions: func,
+    value: any,
+    options: array
   };
 
   constructor(props) {
@@ -106,22 +108,22 @@ export default class Select extends React.Component {
     return processOne(value);
   };
 
-  handleChange = (v) => {
+  handleChange = (value) => {
     let optionsMap = this.state.optionsMap;
-    if (v) {
-      if (v instanceof Array) {
-        v.forEach(vv => {
+    if (value) {
+      if (value instanceof Array) {
+        value.forEach(vv => {
           if (vv.label != vv.value) {
             optionsMap[vv.value] = vv;
           }
         });
       }
-      if (v.label != v.value) {
-        optionsMap[v.value] = v;
+      if (value.label != value.value) {
+        optionsMap[value.value] = value;
       }
     }
-    this.setState({ optionsMap, value: v });
-    this.props.onChange && this.props.onChange(v);
+    this.setState({ optionsMap, value });
+    this.props.onChange && this.props.onChange(value);
   };
 
   renderValueWithRemove = (item) => {

@@ -8,24 +8,35 @@ import React from 'react';
 
 import Select from './Select';
 import Checkbox from './Checkbox';
-import { shallowEqual } from 'alaska-admin-view';
+import Switch from './Switch';
+import { shallowEqual, checkDepends } from 'alaska-admin-view';
 import _find from 'lodash/find';
 import _every from 'lodash/every';
+import _forEach from 'lodash/forEach';
+import _isArray from 'lodash/isArray';
+import _filter from 'lodash/filter';
+
+function getOptionValue(opt) {
+  if (opt && typeof opt === 'object') return opt.value;
+  return opt;
+}
+
+const { bool, object, func, string, any } = React.PropTypes;
 
 export default class SelectFieldView extends React.Component {
 
   static propTypes = {
-    model: React.PropTypes.object,
-    field: React.PropTypes.object,
-    data: React.PropTypes.object,
-    errorText: React.PropTypes.string,
-    disabled: React.PropTypes.bool,
-    value: React.PropTypes.any,
-    onChange: React.PropTypes.func,
+    model: object,
+    field: object,
+    data: object,
+    errorText: string,
+    disabled: bool,
+    value: any,
+    onChange: func,
   };
 
   static contextTypes = {
-    t: React.PropTypes.func,
+    t: func,
   };
 
   constructor(props, context) {
@@ -52,7 +63,18 @@ export default class SelectFieldView extends React.Component {
   }
 
   handleChange = (option) => {
-    this.props.onChange && this.props.onChange(option.value);
+    const { onChange, field } = this.props;
+    if (!onChange) return;
+    let value;
+    if (field.multi) {
+      value = [];
+      _forEach(option, o => {
+        value.push(getOptionValue(o));
+      });
+    } else {
+      value = getOptionValue(option);
+    }
+    onChange(value);
   };
 
   t(opt) {
@@ -62,7 +84,8 @@ export default class SelectFieldView extends React.Component {
     }
     return {
       label: t(opt.label, this.props.model.service.id),
-      value: opt.value
+      value: opt.value,
+      style: opt.style
     };
   }
 
@@ -70,28 +93,31 @@ export default class SelectFieldView extends React.Component {
     if (!options || !data || !options.length) {
       return options;
     }
-    let result = [];
-    options.forEach(opt => {
-      if (!opt.depends) {
-        result.push(this.t(opt));
-        return;
-      }
-      if (typeof opt.depends === 'string') {
-        if (data[opt.depends]) {
-          result.push(this.t(opt));
-        }
-      } else if (typeof opt.depends === 'object' && _every(opt.depends, (value, k) => data[k] === value)) {
-        result.push(this.t(opt));
+    let res = [];
+    _forEach(options, opt => {
+      if (checkDepends(opt.depends, data)) {
+        res.push(this.t(opt));
       }
     });
-    return result;
+    return res;
   };
 
   render() {
     let { field, value, disabled, errorText } = this.props;
-    let View = field.checkbox ? Checkbox : Select;
+    let View = Select;
+    if (field.checkbox) {
+      View = Checkbox;
+    } else if (field.switch) {
+      View = Switch;
+    }
+    if (field.multi) {
+      if (!_isArray(value)) {
+        value = [value];
+      }
+      value = _filter(value, v => v !== undefined && v !== null);
+    }
     let help = field.help;
-    let className = 'form-group';
+    let className = 'form-group select-field';
     if (errorText) {
       className += ' has-error';
       help = errorText;
@@ -99,11 +125,24 @@ export default class SelectFieldView extends React.Component {
     let helpElement = help ? <p className="help-block">{help}</p> : null;
     let inputElement;
     if (field.static) {
-      let option = _find(this.state.options, opt => opt.value === value);
-      inputElement = <p className="form-control-static">{option ? option.label : value}</p>;
+      if (field.multi) {
+        inputElement = [];
+        let valueMap = {};
+        _forEach(value, v => (valueMap[getOptionValue(v)] = true));
+        _forEach(this.state.options, opt => {
+          if (valueMap[opt.value]) {
+            inputElement.push(<span key={opt.value}>{opt.label || opt.value}</span>);
+          }
+        });
+      } else {
+        let option = _find(this.state.options, opt => opt.value === value);
+        inputElement = option ? option.label : value;
+      }
+      inputElement = <p className="form-control-static">{inputElement}</p>;
     } else {
       inputElement = <View
         value={value}
+        multi={field.multi}
         disabled={disabled}
         options={this.state.options}
         onChange={this.handleChange}

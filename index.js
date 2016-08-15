@@ -11,7 +11,11 @@ const alaska = require('alaska');
 class SelectField extends alaska.Field {
   initSchema() {
     let schema = this._schema;
-    this.dataType = this.number ? Number : this.boolean ? Boolean : String;
+    if (this.multi) {
+      this.dataType = Array;
+    } else {
+      this.dataType = this.number ? Number : this.boolean ? Boolean : String;
+    }
     let options = {
       type: this.dataType
     };
@@ -44,13 +48,14 @@ class SelectField extends alaska.Field {
       }
     }
 
-    if (this.dataType === Number) {
+    if (this.number) {
       value = parseInt(value);
       if (isNaN(value)) return;
       return inverse ? { $ne: value } : value;
-    }
-
-    if (this.dataType === String) {
+    } else if (this.boolean) {
+      value = value && (value === true || value === 'true');
+      return inverse ? { $ne: value } : value;
+    } else {
       if (typeof value !== 'string' && value.toString) {
         value = value.toString();
       }
@@ -58,13 +63,7 @@ class SelectField extends alaska.Field {
         return inverse ? { $ne: value } : value;
       }
     }
-
-    if (this.dataType === Boolean) {
-      value = value && (value === true || value === 'true');
-      return inverse ? { $ne: value } : value;
-    }
   }
-
 }
 
 SelectField.views = {
@@ -84,6 +83,6 @@ SelectField.views = {
 
 SelectField.plain = String;
 
-SelectField.viewOptions = ['options', 'translate', 'check'];
+SelectField.viewOptions = ['options', 'translate', 'checkbox', 'switch', 'multi'];
 
 module.exports = SelectField;

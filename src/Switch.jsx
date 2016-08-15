@@ -1,13 +1,11 @@
 /**
  * @copyright Maichong Software Ltd. 2016 http://maichong.it
- * @date 2016-08-11
+ * @date 2016-08-14
  * @author Liang <liang@maichong.it>
  */
 
 import React from 'react';
-import Check from 'alaska-field-checkbox/lib/Checkbox';
 import _map from 'lodash/map';
-import _reduce from 'lodash/reduce';
 import _forEach from 'lodash/forEach';
 
 function getOptionValue(opt) {
@@ -17,7 +15,7 @@ function getOptionValue(opt) {
 
 const { any, array, bool, func } = React.PropTypes;
 
-export default class Checkbox extends React.Component {
+export default class Switch extends React.Component {
 
   static propTypes = {
     multi: bool,
@@ -53,15 +51,11 @@ export default class Checkbox extends React.Component {
     }
   }
 
-  handleCheck(opt) {
-    const { multi, onChange, value } = this.props;
+  handleClick(opt) {
+    const { value, multi, onChange } = this.props;
     const { options } = this.state;
     if (!multi) {
-      let valueId = getOptionValue(value);
-      if (valueId != opt.value) {
-        onChange(opt);
-      }
-      return;
+      return onChange(opt);
     }
 
     //multi
@@ -75,48 +69,40 @@ export default class Checkbox extends React.Component {
 
     let res = [];
     let found = false;
-
     _forEach(value, v => {
-      if (!v) return;
       let vid = getOptionValue(v);
-      if (vid == opt.value) {
+      if (vid === opt) {
         found = true;
       } else if (optionsMap[vid]) {
-        res.push(v);
+        res.push(vid);
       }
     });
-
     if (!found) {
-      res.push(opt.value);
+      res.push(opt);
     }
-    onChange(res);
+    return onChange(res);
   }
 
   render() {
-    const { multi, value } = this.props;
+    const { value, multi } = this.props;
     const { options } = this.state;
     let valueMap = {};
     if (multi) {
-      _forEach(value, v => {
-        if (!v) return;
-        v = v.value ? v.value : v;
-        valueMap[v] = true;
-      });
+      _forEach(value, v => (valueMap[getOptionValue(v)] = true));
+    } else if (value) {
+      valueMap[getOptionValue(value)] = true;
     }
-
     return (
-      <div>{
-        _map(options, (opt, key) => {
-          return (<Check
-            key={key}
-            radio={!multi}
-            label={opt.label}
-            value={multi ? valueMap[opt.value] : (opt.value == value || opt == value || opt.value == value.value)}
-            style={{ display: 'inline-block', marginRight: 16 }}
-            onCheck={() => this.handleCheck(opt)}
-          />);
-        })
-      }</div>
+      <div className="btn-group">
+        {_map(options, o => {
+          let cls = 'btn btn-' + (o.style || 'default');
+          let vid = getOptionValue(o);
+          if (valueMap[vid]) {
+            cls += (o.style ? ' active' : ' btn-success');
+          }
+          return <div key={vid} className={cls} onClick={() => this.handleClick(vid)}>{o.label}</div>;
+        })}
+      </div>
     );
   }
 }
