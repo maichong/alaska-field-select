@@ -66,13 +66,23 @@ export default class Select extends React.Component {
 
   componentWillReceiveProps(props) {
     let state = {};
-    if (props.options) {
+    if (props.options !== this.props.options) {
       state.options = props.options;
+      state.optionsMap = {};
+      if (props.options) {
+        for (let o of props.options) {
+          state.optionsMap[o.value] = o;
+        }
+      }
     }
     if (props.value !== undefined) {
       state.value = this.processValue(props.value);
     }
-    this.setState(state);
+    this.setState(state, () => {
+      if (state.optionsMap) {
+        this.setState({ value: this.processValue(props.value) });
+      }
+    });
   }
 
   componentWillUnmount() {
