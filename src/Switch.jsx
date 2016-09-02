@@ -89,7 +89,7 @@ export default class Switch extends React.Component {
     let valueMap = {};
     if (multi) {
       _forEach(value, v => (valueMap[getOptionValue(v)] = true));
-    } else if (value) {
+    } else if (value !== undefined) {
       valueMap[getOptionValue(value)] = true;
     }
     return (

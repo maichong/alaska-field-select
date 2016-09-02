@@ -60,7 +60,7 @@ export default class SelectFieldFilter extends React.Component {
   };
 
   handleChange = option => {
-    this.setState({ value: getOptionValue(value) }, () => this.handleBlur());
+    this.setState({ value: getOptionValue(option) }, () => this.handleBlur());
   };
 
   handleBlur = () => {
